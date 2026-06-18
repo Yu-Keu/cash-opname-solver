@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Opname Solver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f0f0f0; }
+        
+        /* Brutalist Styles - Scaled down for compactness */
+        .b-border { border: 3px solid #000; }
+        .b-shadow { box-shadow: 4px 4px 0px #000; }
+        .b-shadow-sm { box-shadow: 2px 2px 0px #000; }
+        
+        .b-input {
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
+            transition: transform 0.1s;
+        }
+        .b-input:focus {
+            outline: none;
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px #000;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-2 flex items-center justify-center">
+
+    <div class="w-full max-w-2xl bg-white b-border b-shadow p-4 md:p-5 space-y-4">
+        
+        <!-- HEADER -->
+        <div class="flex items-center justify-between">
+            <div class="bg-[#FFE500] b-border p-1.5 px-3 inline-block b-shadow-sm">
+                <h1 class="text-xl md:text-2xl font-extrabold uppercase tracking-tight text-black">
+                    CASH OPNAME.
+                </h1>
+            </div>
+            <span class="bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest">
+                Transit: <span id="statusVirtual" class="text-[#39FF14]">Rp 0</span>
+            </span>
+        </div>
+
+        <!-- INPUT SECTION -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-[#E0E7FF] b-border p-3">
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1">1. Kasbon Lama</label>
+                <div class="relative">
+                    <span class="absolute left-2 top-1.5 text-sm font-bold text-gray-400">Rp</span>
+                    <input type="text" inputmode="numeric" id="inputP" placeholder="0" class="w-full b-input py-1.5 pl-8 pr-2 text-sm font-bold text-right" onkeyup="formatInput(this)">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1">2. Pengeluaran Rill</label>
+                <div class="relative">
+                    <span class="absolute left-2 top-1.5 text-sm font-bold text-gray-400">Rp</span>
+                    <input type="text" inputmode="numeric" id="inputR" placeholder="0" class="w-full b-input py-1.5 pl-8 pr-2 text-sm font-bold text-right bg-white" onkeyup="formatInput(this)">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1">3. Kasbon Baru</label>
+                <div class="relative">
+                    <span class="absolute left-2 top-1.5 text-sm font-bold text-gray-400">Rp</span>
+                    <input type="text" inputmode="numeric" id="inputK" placeholder="0" class="w-full b-input py-1.5 pl-8 pr-2 text-sm font-bold text-right bg-white" onkeyup="formatInput(this)">
+                </div>
+            </div>
+        </div>
+
+        <!-- HASIL FISIK -->
+        <div class="bg-[#00E5FF] b-border b-shadow-sm p-3 text-center flex flex-col justify-center items-center">
+            <h2 class="text-xs font-bold uppercase bg-black text-white px-2 py-0.5 inline-block mb-1">Berikan Uang Fisik Ke Peminjam Sebesar:</h2>
+            <div id="outFisik" class="text-3xl md:text-4xl font-extrabold tracking-tighter text-black">Rp 0</div>
+        </div>
+
+        <!-- PANDUAN POP-UP APLIKASI -->
+        <div class="space-y-2.5 pt-2 border-t-2 border-black">
+            <h3 class="text-sm font-extrabold uppercase">Input Angka Ke Pop-up:</h3>
+
+            <!-- POPUP 1 -->
+            <div class="flex b-border bg-white b-shadow-sm">
+                <div class="bg-[#FF00E6] text-white font-black p-2 flex items-center justify-center w-20 border-r-2 border-black text-xs md:text-sm">
+                    POP 1
+                </div>
+                <div class="p-2 flex-1 flex justify-between items-center bg-[#FAFAFA]">
+                    <div>
+                        <p class="font-bold uppercase text-[10px] text-gray-500">Pengembalian Kasbon</p>
+                        <p class="font-bold text-xs">Input <span class="bg-black text-white px-1">Dana Virtual</span></p>
+                    </div>
+                    <div id="pop1V" class="text-lg font-black text-[#FF00E6]">Rp 0</div>
+                </div>
+            </div>
+
+            <!-- POPUP 2 -->
+            <div class="flex b-border bg-white b-shadow-sm">
+                <div class="bg-[#39FF14] text-black font-black p-2 flex items-center justify-center w-20 border-r-2 border-black text-xs md:text-sm">
+                    POP 2
+                </div>
+                <div class="p-2 flex-1 flex justify-between items-center bg-[#FAFAFA]">
+                    <div>
+                        <p class="font-bold uppercase text-[10px] text-gray-500">Laporan Rill / Keluar</p>
+                        <p class="font-bold text-xs">Input <span class="bg-black text-white px-1">Dana Virtual</span></p>
+                    </div>
+                    <div id="pop2V" class="text-lg font-black text-[#1FA60A]">Rp 0</div>
+                </div>
+            </div>
+
+            <!-- POPUP 3 -->
+            <div class="flex b-border bg-white b-shadow-sm">
+                <div class="bg-[#FF6B00] text-white font-black p-2 flex items-center justify-center w-20 border-r-2 border-black text-xs md:text-sm">
+                    POP 3
+                </div>
+                <div class="p-2 flex-1 grid grid-cols-2 gap-2 bg-[#FAFAFA]">
+                    <div class="border-r-2 border-dashed border-gray-300 pr-2">
+                        <p class="font-bold uppercase text-[10px] text-gray-500">Kasbon Baru</p>
+                        <p class="font-bold text-xs">Input <span class="bg-black text-white px-1">Dana Virtual</span></p>
+                        <div id="pop3V" class="text-base md:text-lg font-black text-[#FF6B00] mt-0.5">Rp 0</div>
+                    </div>
+                    <div class="pl-1">
+                        <p class="font-bold uppercase text-[10px] text-gray-500">Dan sisanya</p>
+                        <p class="font-bold text-xs">Input <span class="bg-white border border-black px-1">Uang Fisik</span></p>
+                        <div id="pop3F" class="text-base md:text-lg font-black text-black mt-0.5">Rp 0</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Fungsi memformat angka dengan titik ribuan saat diketik
+        function formatInput(input) {
+            let val = input.value.replace(/[^,\d]/g, '').toString();
+            let split = val.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            
+            input.value = rupiah; // Kembalikan nilai dengan format titik
+            kalkulasi(); // Panggil fungsi hitung tiap kali ngetik
+        }
+
+        // Fungsi mengubah string "100.000.000" jadi angka murni 100000000
+        function parseAngka(str) {
+            if (!str) return 0;
+            return parseInt(str.replace(/\./g, '')) || 0;
+        }
+
+        // Format angka jadi string Rp 100.000.000
+        function formatRp(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        function kalkulasi() {
+            // 1. Ambil nilai input bersih tanpa titik
+            const P = parseAngka(document.getElementById('inputP').value);
+            const R = parseAngka(document.getElementById('inputR').value);
+            const K = parseAngka(document.getElementById('inputK').value);
+
+            // 2. Hitung Sisa Uang Kasbon Lama yang masih dipegang
+            const sisaKasbon = Math.max(0, P - R);
+
+            // 3. UANG FISIK KELUAR = Kasbon Baru - Sisa Uang yang dipegang
+            const fisikKeluar = Math.max(0, K - sisaKasbon);
+
+            // 4. Update UI Header Fisik
+            document.getElementById('outFisik').innerText = formatRp(fisikKeluar);
+
+            // 5. Pembagian Pop-up
+            document.getElementById('pop1V').innerText = formatRp(P);
+            document.getElementById('pop2V').innerText = formatRp(R);
+            document.getElementById('pop3V').innerText = formatRp(sisaKasbon);
+            document.getElementById('pop3F').innerText = formatRp(fisikKeluar);
+        }
+
+        // Jalankan saat load awal biar nilainya Rp 0 semua
+        window.onload = kalkulasi;
+    </script>
+</body>
+</html>
