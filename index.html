@@ -3,184 +3,438 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash Opname Solver</title>
+    <title>Cash Opname Solver Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #f0f0f0; }
-        
-        /* Brutalist Styles - Scaled down for compactness */
-        .b-border { border: 3px solid #000; }
-        .b-shadow { box-shadow: 4px 4px 0px #000; }
-        .b-shadow-sm { box-shadow: 2px 2px 0px #000; }
-        
-        .b-input {
-            border: 2px solid #000;
-            box-shadow: 2px 2px 0px #000;
-            transition: transform 0.1s;
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
         }
-        .b-input:focus {
-            outline: none;
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0px #000;
+        /* Custom scrollbar tinggi kontras untuk modal */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
         }
     </style>
 </head>
-<body class="min-h-screen p-2 flex items-center justify-center">
+<body class="min-h-screen bg-slate-100 p-3 md:p-6 flex items-center justify-center text-slate-900">
 
-    <div class="w-full max-w-2xl bg-white b-border b-shadow p-4 md:p-5 space-y-4">
+    <div class="w-full max-w-5xl bg-white border-2 border-slate-300 shadow-xl rounded-2xl p-4 md:p-6 space-y-5">
         
         <!-- HEADER -->
-        <div class="flex items-center justify-between">
-            <div class="bg-[#FFE500] b-border p-1.5 px-3 inline-block b-shadow-sm">
-                <h1 class="text-xl md:text-2xl font-extrabold uppercase tracking-tight text-black">
-                    CASH OPNAME.
+        <div class="flex items-center justify-between border-b-2 border-slate-200 pb-4">
+            <div class="flex items-center gap-2.5">
+                <div class="h-4.5 w-4.5 rounded-full bg-indigo-700 animate-pulse border border-indigo-900"></div>
+                <h1 class="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900">
+                    CASH OPNAME
                 </h1>
             </div>
-            <span class="bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest">
-                Transit: <span id="statusVirtual" class="text-[#39FF14]">Rp 0</span>
-            </span>
-        </div>
-
-        <!-- INPUT SECTION -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-[#E0E7FF] b-border p-3">
-            <div>
-                <label class="block text-xs font-bold uppercase mb-1">1. Kasbon Lama</label>
-                <div class="relative">
-                    <span class="absolute left-2 top-1.5 text-sm font-bold text-gray-400">Rp</span>
-                    <input type="text" inputmode="numeric" id="inputP" placeholder="0" class="w-full b-input py-1.5 pl-8 pr-2 text-sm font-bold text-right" onkeyup="formatInput(this)">
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase mb-1">2. Pengeluaran Rill</label>
-                <div class="relative">
-                    <span class="absolute left-2 top-1.5 text-sm font-bold text-gray-400">Rp</span>
-                    <input type="text" inputmode="numeric" id="inputR" placeholder="0" class="w-full b-input py-1.5 pl-8 pr-2 text-sm font-bold text-right bg-white" onkeyup="formatInput(this)">
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase mb-1">3. Kasbon Baru</label>
-                <div class="relative">
-                    <span class="absolute left-2 top-1.5 text-sm font-bold text-gray-400">Rp</span>
-                    <input type="text" inputmode="numeric" id="inputK" placeholder="0" class="w-full b-input py-1.5 pl-8 pr-2 text-sm font-bold text-right bg-white" onkeyup="formatInput(this)">
-                </div>
+            <div id="statusTransitContainer">
+                <span id="statusTransit" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-100 text-emerald-900 border-2 border-emerald-500 shadow-sm transition-all duration-300">
+                    SEIMBANG
+                </span>
             </div>
         </div>
 
-        <!-- HASIL FISIK -->
-        <div class="bg-[#00E5FF] b-border b-shadow-sm p-3 text-center flex flex-col justify-center items-center">
-            <h2 class="text-xs font-bold uppercase bg-black text-white px-2 py-0.5 inline-block mb-1">Berikan Uang Fisik Ke Peminjam Sebesar:</h2>
-            <div id="outFisik" class="text-3xl md:text-4xl font-extrabold tracking-tighter text-black">Rp 0</div>
-        </div>
-
-        <!-- PANDUAN POP-UP APLIKASI -->
-        <div class="space-y-2.5 pt-2 border-t-2 border-black">
-            <h3 class="text-sm font-extrabold uppercase">Input Angka Ke Pop-up:</h3>
-
-            <!-- POPUP 1 -->
-            <div class="flex b-border bg-white b-shadow-sm">
-                <div class="bg-[#FF00E6] text-white font-black p-2 flex items-center justify-center w-20 border-r-2 border-black text-xs md:text-sm">
-                    POP 1
-                </div>
-                <div class="p-2 flex-1 flex justify-between items-center bg-[#FAFAFA]">
+        <!-- MAIN LAYOUT GRID (Optimized for One-Screen Desktop) -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+            
+            <!-- LEFT PANEL: INPUTS & FINAL RESULT (md:col-span-5) -->
+            <div class="md:col-span-5 flex flex-col justify-between space-y-4">
+                
+                <!-- INPUT GRID (2x2) -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 shadow-inner">
+                    <!-- Kasbon Lama -->
                     <div>
-                        <p class="font-bold uppercase text-[10px] text-gray-500">Pengembalian Kasbon</p>
-                        <p class="font-bold text-xs">Input <span class="bg-black text-white px-1">Dana Virtual</span></p>
+                        <label class="block text-xs font-black uppercase tracking-wider text-slate-800 mb-1">1. Kasbon Lama</label>
+                        <div class="relative">
+                            <span class="absolute left-2.5 top-2.5 text-xs font-black text-slate-500">Rp</span>
+                            <input type="text" inputmode="numeric" id="inputP" placeholder="0" class="w-full border-2 border-slate-300 rounded-lg py-2 pl-8 pr-2.5 text-sm font-black text-slate-900 text-right focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all bg-white" onkeyup="formatInput(this)">
+                        </div>
                     </div>
-                    <div id="pop1V" class="text-lg font-black text-[#FF00E6]">Rp 0</div>
-                </div>
-            </div>
-
-            <!-- POPUP 2 -->
-            <div class="flex b-border bg-white b-shadow-sm">
-                <div class="bg-[#39FF14] text-black font-black p-2 flex items-center justify-center w-20 border-r-2 border-black text-xs md:text-sm">
-                    POP 2
-                </div>
-                <div class="p-2 flex-1 flex justify-between items-center bg-[#FAFAFA]">
+                    <!-- Kembalian Fisik -->
                     <div>
-                        <p class="font-bold uppercase text-[10px] text-gray-500">Laporan Rill / Keluar</p>
-                        <p class="font-bold text-xs">Input <span class="bg-black text-white px-1">Dana Virtual</span></p>
+                        <label class="block text-xs font-black uppercase tracking-wider text-indigo-900 mb-1">2. Kembalian Fisik</label>
+                        <div class="relative cursor-pointer" onclick="toggleModal(true)">
+                            <span class="absolute left-2.5 top-2.5 text-xs font-black text-indigo-600">Rp</span>
+                            <input type="text" id="inputF" placeholder="Klik Lembaran" readonly class="w-full border-2 border-indigo-400 rounded-lg py-2 pl-8 pr-2.5 text-sm font-black text-indigo-900 text-right focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all bg-indigo-50/50 hover:bg-indigo-50 cursor-pointer select-none">
+                        </div>
                     </div>
-                    <div id="pop2V" class="text-lg font-black text-[#1FA60A]">Rp 0</div>
+                    <!-- Laporan Riil -->
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-wider text-slate-800 mb-1">3. Laporan Rill</label>
+                        <div class="relative">
+                            <span class="absolute left-2.5 top-2.5 text-xs font-black text-slate-500">Rp</span>
+                            <input type="text" inputmode="numeric" id="inputR" placeholder="0" class="w-full border-2 border-slate-300 rounded-lg py-2 pl-8 pr-2.5 text-sm font-black text-slate-900 text-right focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all bg-white" onkeyup="formatInput(this)">
+                        </div>
+                    </div>
+                    <!-- Kasbon Baru -->
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-wider text-slate-800 mb-1">4. Kasbon Baru</label>
+                        <div class="relative">
+                            <span class="absolute left-2.5 top-2.5 text-xs font-black text-slate-500">Rp</span>
+                            <input type="text" inputmode="numeric" id="inputK" placeholder="0" class="w-full border-2 border-slate-300 rounded-lg py-2 pl-8 pr-2.5 text-sm font-black text-slate-900 text-right focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all bg-white" onkeyup="formatInput(this)">
+                        </div>
+                    </div>
                 </div>
+
+                <!-- MAIN DYNAMIC RESULT BOX -->
+                <div id="fisikBox" class="bg-white border-2 border-slate-300 p-5 rounded-xl text-center flex flex-col justify-center items-center shadow-md transition-all h-full min-h-[140px]">
+                    <!-- Konten dinamis di-render oleh Javascript -->
+                </div>
+
+                <!-- ROUNDING & RESET CONTROLS -->
+                <div id="roundingControls" class="grid grid-cols-3 gap-2">
+                    <button onclick="bulatkan(100000)" class="bg-slate-900 hover:bg-black text-white font-bold text-xs py-2 rounded-lg transition-all shadow-sm active:translate-y-0.5">
+                        ⚡ Bulat 100k
+                    </button>
+                    <button onclick="bulatkan(50000)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 rounded-lg transition-all shadow-sm active:translate-y-0.5">
+                        ⚡ Bulat 50k
+                    </button>
+                    <button onclick="resetKembalian()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs py-2 rounded-lg transition-all border border-slate-400 active:translate-y-0.5">
+                        ✕ Reset
+                    </button>
+                </div>
+
             </div>
 
-            <!-- POPUP 3 -->
-            <div class="flex b-border bg-white b-shadow-sm">
-                <div class="bg-[#FF6B00] text-white font-black p-2 flex items-center justify-center w-20 border-r-2 border-black text-xs md:text-sm">
-                    POP 3
-                </div>
-                <div class="p-2 flex-1 grid grid-cols-2 gap-2 bg-[#FAFAFA]">
-                    <div class="border-r-2 border-dashed border-gray-300 pr-2">
-                        <p class="font-bold uppercase text-[10px] text-gray-500">Kasbon Baru</p>
-                        <p class="font-bold text-xs">Input <span class="bg-black text-white px-1">Dana Virtual</span></p>
-                        <div id="pop3V" class="text-base md:text-lg font-black text-[#FF6B00] mt-0.5">Rp 0</div>
+            <!-- RIGHT PANEL: DETAILED POP BREAKDOWNS (md:col-span-7) -->
+            <div class="md:col-span-7 flex flex-col justify-between space-y-3.5">
+                
+                <!-- POPUP 1 (PINK) -->
+                <div class="flex border-2 border-slate-300 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-pink-600 text-white font-black p-4 flex flex-col items-center justify-center w-24 border-r-2 border-slate-300 shrink-0 select-none">
+                        <span class="text-[9px] uppercase tracking-widest opacity-90">TAHAPAN</span>
+                        <span class="text-base font-black">POP 1</span>
                     </div>
-                    <div class="pl-1">
-                        <p class="font-bold uppercase text-[10px] text-gray-500">Dan sisanya</p>
-                        <p class="font-bold text-xs">Input <span class="bg-white border border-black px-1">Uang Fisik</span></p>
-                        <div id="pop3F" class="text-base md:text-lg font-black text-black mt-0.5">Rp 0</div>
+                    <div class="p-3 flex-1 flex flex-col justify-center">
+                        <p class="font-extrabold uppercase text-[10px] text-slate-700 mb-2 tracking-wider border-b-2 border-slate-100 pb-1">Pengembalian Kasbon (Masuk)</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div id="box1F" class="p-2 border rounded-lg transition-all">
+                                <p class="font-bold text-[9px] uppercase tracking-wide text-slate-500 mb-0.5">Dana Fisik (Dari No.2)</p>
+                                <div id="pop1F" class="text-sm font-black text-slate-500">Rp 0</div>
+                            </div>
+                            <div id="box1V" class="p-2 border rounded-lg transition-all">
+                                <p class="font-bold text-[9px] uppercase tracking-wide text-slate-500 mb-0.5">Dana Virtual (Sisa)</p>
+                                <div id="pop1V" class="text-sm font-black text-slate-500">Rp 0</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- POPUP 2 (HIJAU) -->
+                <div class="flex border-2 border-slate-300 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-emerald-600 text-white font-black p-4 flex flex-col items-center justify-center w-24 border-r-2 border-slate-300 shrink-0 select-none">
+                        <span class="text-[9px] uppercase tracking-widest opacity-90">TAHAPAN</span>
+                        <span class="text-base font-black">POP 2</span>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-center">
+                        <p class="font-extrabold uppercase text-[10px] text-slate-700 mb-2 tracking-wider border-b-2 border-slate-100 pb-1">Laporan Riil (Keluar)</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div id="box2V" class="p-2 border rounded-lg transition-all">
+                                <p class="font-bold text-[9px] uppercase tracking-wide text-slate-500 mb-0.5">Dana Virtual</p>
+                                <div id="pop2V" class="text-sm font-black text-slate-500">Rp 0</div>
+                            </div>
+                            <div id="box2F" class="p-2 border rounded-lg transition-all">
+                                <p class="font-bold text-[9px] uppercase tracking-wide text-slate-500 mb-0.5">Dana Fisik (Reimburse)</p>
+                                <div id="pop2F" class="text-sm font-black text-slate-500">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POPUP 3 (ORANYE) -->
+                <div class="flex border-2 border-slate-300 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-amber-600 text-white font-black p-4 flex flex-col items-center justify-center w-24 border-r-2 border-slate-300 shrink-0 select-none">
+                        <span class="text-[9px] uppercase tracking-widest opacity-90">TAHAPAN</span>
+                        <span class="text-base font-black">POP 3</span>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-center">
+                        <p class="font-extrabold uppercase text-[10px] text-slate-700 mb-2 tracking-wider border-b-2 border-slate-100 pb-1">Kasbon Baru (Keluar)</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div id="box3V" class="p-2 border rounded-lg transition-all">
+                                <p class="font-bold text-[9px] uppercase tracking-wide text-slate-500 mb-0.5">Dana Virtual</p>
+                                <div id="pop3V" class="text-sm font-black text-slate-500">Rp 0</div>
+                            </div>
+                            <div id="box3F" class="p-2 border rounded-lg transition-all">
+                                <p class="font-bold text-[9px] uppercase tracking-wide text-slate-500 mb-0.5">Dana Fisik</p>
+                                <div id="pop3F" class="text-sm font-black text-slate-500">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
 
     </div>
 
+    <!-- MODAL POP-UP DENOMINASI LEMBARAN -->
+    <div id="denomModal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+        <div class="bg-white rounded-2xl border-2 border-slate-400 shadow-2xl p-5 max-w-sm w-full space-y-4 transform scale-100 transition-all">
+            <div class="flex justify-between items-center border-b-2 border-slate-200 pb-2.5">
+                <h3 class="font-black text-sm text-slate-900 uppercase tracking-wider">Pecahan Kembalian Fisik</h3>
+                <button onclick="toggleModal(false)" class="text-slate-500 hover:text-black font-black p-1 text-sm">✕ CLOSE</button>
+            </div>
+            
+            <!-- Grid Denominasi dengan Scrollbar Tajam -->
+            <div class="grid grid-cols-2 gap-x-5 gap-y-2 text-xs max-h-56 overflow-y-auto pr-1.5 custom-scrollbar" id="modalDenomInputs">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+
+            <div class="bg-indigo-50 p-3 rounded-xl border-2 border-indigo-200 flex justify-between items-center text-xs font-black text-indigo-900">
+                <span>TOTAL KEMBALIAN:</span>
+                <span id="denomModalTotal" class="text-sm font-black text-indigo-700">Rp 0</span>
+            </div>
+            <button onclick="toggleModal(false)" class="w-full bg-slate-900 hover:bg-black text-white font-black py-2.5 rounded-xl text-xs uppercase shadow-md active:translate-y-0.5 transition-all">
+                Simpan & Tutup
+            </button>
+        </div>
+    </div>
+
     <script>
-        // Fungsi memformat angka dengan titik ribuan saat diketik
+        const denoms = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
+
+        // Membentuk elemen input modal denominasi di awal
+        function initModalDenoms() {
+            const container = document.getElementById('modalDenomInputs');
+            container.innerHTML = '';
+            denoms.forEach(denom => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between py-1 border-b border-slate-100 last:border-0";
+                item.innerHTML = `
+                    <span class="font-extrabold text-xs text-slate-800">Rp ${denom.toLocaleString('id-ID')}</span>
+                    <input type="number" id="sheet_${denom}" min="0" placeholder="0" 
+                        class="w-16 text-center py-1 border-2 border-slate-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all font-mono font-black text-xs bg-slate-50 text-slate-900"
+                        oninput="updateFromModal()">
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('denomModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        // Jalankan tiap kali ada input di modal denominasi
+        function updateFromModal() {
+            let total = 0;
+            denoms.forEach(denom => {
+                const count = parseInt(document.getElementById('sheet_' + denom).value) || 0;
+                total += count * denom;
+            });
+            document.getElementById('inputF').value = formatRibuan(total.toString());
+            document.getElementById('denomModalTotal').innerText = formatRp(total);
+            kalkulasi();
+        }
+
+        // Pembulatan otomatis dengan meminta kembalian
+        function bulatkan(kelipatan) {
+            const P = parseAngka(document.getElementById('inputP').value);
+            const R = parseAngka(document.getElementById('inputR').value);
+            const K = parseAngka(document.getElementById('inputK').value);
+
+            // Hitung sisa kebutuhan kas riil sebelum ada kembalian fisik
+            const sisaKasbon = Math.max(0, P - R);
+            const netAsli = K - sisaKasbon;
+
+            if (netAsli <= 0) {
+                alert("Pembulatan otomatis hanya dapat digunakan saat laci harus MENGELUARKAN uang fisik.");
+                return;
+            }
+
+            // Hitung target pembulatan ke atas (Kelipatan terdekat)
+            const targetBulat = Math.ceil(netAsli / kelipatan) * kelipatan;
+            const kembalianYangHarusDiminta = targetBulat - netAsli;
+
+            if (kembalianYangHarusDiminta === 0) {
+                alert("Nominal sudah bulat!");
+                return;
+            }
+
+            // Isikan nilai kembalian ke modal pecahan secara otomatis (metode Greedy)
+            let sisaKembalian = kembalianYangHarusDiminta;
+            denoms.forEach(denom => {
+                const lembar = Math.floor(sisaKembalian / denom);
+                const inputSheet = document.getElementById('sheet_' + denom);
+                if (lembar > 0) {
+                    inputSheet.value = lembar;
+                    sisaKembalian -= lembar * denom;
+                } else {
+                    inputSheet.value = '';
+                }
+            });
+
+            // Update field Kembalian Fisik (No. 2)
+            document.getElementById('inputF').value = formatRibuan(kembalianYangHarusDiminta.toString());
+            document.getElementById('denomModalTotal').innerText = formatRp(kembalianYangHarusDiminta);
+            
+            kalkulasi();
+        }
+
+        function resetKembalian() {
+            denoms.forEach(denom => {
+                document.getElementById('sheet_' + denom).value = '';
+            });
+            document.getElementById('inputF').value = '';
+            document.getElementById('denomModalTotal').innerText = formatRp(0);
+            kalkulasi();
+        }
+
         function formatInput(input) {
-            let val = input.value.replace(/[^,\d]/g, '').toString();
+            input.value = formatRibuan(input.value);
+            kalkulasi();
+        }
+
+        function formatRibuan(str) {
+            let val = str.replace(/[^,\d]/g, '').toString();
             let split = val.split(',');
             let sisa = split[0].length % 3;
             let rupiah = split[0].substr(0, sisa);
             let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
             if (ribuan) {
                 let separator = sisa ? '.' : '';
                 rupiah += separator + ribuan.join('.');
             }
-            
-            input.value = rupiah; // Kembalikan nilai dengan format titik
-            kalkulasi(); // Panggil fungsi hitung tiap kali ngetik
+            return rupiah;
         }
 
-        // Fungsi mengubah string "100.000.000" jadi angka murni 100000000
         function parseAngka(str) {
             if (!str) return 0;
             return parseInt(str.replace(/\./g, '')) || 0;
         }
 
-        // Format angka jadi string Rp 100.000.000
         function formatRp(angka) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         }
 
+        function setPopState(id, val) {
+            const el = document.getElementById(id);
+            const box = document.getElementById('box' + id.replace('pop', ''));
+            el.innerText = formatRp(val);
+            
+            let activeClass = "";
+            let textClass = "";
+            
+            if (id.startsWith('pop1')) {
+                activeClass = "bg-pink-100 border-pink-400 text-pink-950";
+                textClass = "text-pink-900 font-black";
+            } else if (id.startsWith('pop2')) {
+                activeClass = "bg-emerald-100 border-emerald-400 text-emerald-950";
+                textClass = "text-emerald-900 font-black";
+            } else if (id.startsWith('pop3')) {
+                activeClass = "bg-amber-100 border-amber-400 text-amber-950";
+                textClass = "text-amber-900 font-black";
+            }
+            
+            if (val > 0) {
+                box.className = `p-2.5 border-2 rounded-xl transition-all shadow-sm ${activeClass}`;
+                el.className = `text-sm md:text-base ${textClass}`;
+            } else {
+                // Untuk status 0, kontras tetap dipertahankan cukup tajam agar tidak melelahkan mata membaca labelnya
+                box.className = `p-2.5 border border-slate-200 bg-slate-50/50 rounded-xl transition-all`;
+                el.className = `text-xs md:text-sm font-bold text-slate-500`;
+            }
+        }
+
         function kalkulasi() {
-            // 1. Ambil nilai input bersih tanpa titik
             const P = parseAngka(document.getElementById('inputP').value);
+            const F_in = parseAngka(document.getElementById('inputF').value);
             const R = parseAngka(document.getElementById('inputR').value);
             const K = parseAngka(document.getElementById('inputK').value);
 
-            // 2. Hitung Sisa Uang Kasbon Lama yang masih dipegang
-            const sisaKasbon = Math.max(0, P - R);
+            // LOGIKA PEMBAGIAN POP-UP
+            const pop1F = F_in; 
+            const pop1V = Math.max(0, P - F_in); 
+            
+            const pop2V = Math.min(R, pop1V); 
+            const pop2F = Math.max(0, R - pop1V); 
 
-            // 3. UANG FISIK KELUAR = Kasbon Baru - Sisa Uang yang dipegang
-            const fisikKeluar = Math.max(0, K - sisaKasbon);
+            const sisaVirtual = pop1V - pop2V;
 
-            // 4. Update UI Header Fisik
-            document.getElementById('outFisik').innerText = formatRp(fisikKeluar);
+            const pop3V = Math.min(K, sisaVirtual); 
+            const pop3F = Math.max(0, K - pop3V); 
 
-            // 5. Pembagian Pop-up
-            document.getElementById('pop1V').innerText = formatRp(P);
-            document.getElementById('pop2V').innerText = formatRp(R);
-            document.getElementById('pop3V').innerText = formatRp(sisaKasbon);
-            document.getElementById('pop3F').innerText = formatRp(fisikKeluar);
+            const unallocatedV = sisaVirtual - pop3V;
+
+            // Hitung total fisik (Netto)
+            const totalOut = pop2F + pop3F;
+            const totalIn = pop1F;
+            const netFisik = totalOut - totalIn;
+
+            // UPDATE UI KOTAK FISIK UTAMA (Sangat Tajam & Jelas)
+            const fisikBox = document.getElementById('fisikBox');
+
+            if (netFisik > 0) {
+                fisikBox.className = "bg-gradient-to-br from-blue-100 to-indigo-100/50 border-2 border-blue-500 p-5 rounded-xl text-center flex flex-col justify-center items-center shadow-md transition-all h-full min-h-[140px]";
+                fisikBox.innerHTML = `
+                    <span class="text-xs tracking-wider font-black uppercase bg-blue-700 text-white px-3 py-1 rounded-md mb-2.5 shadow-sm">
+                        BERIKAN FISIK KE PEMINJAM
+                    </span>
+                    <div class="text-3xl md:text-4xl font-black tracking-tight text-slate-950">
+                        ${formatRp(netFisik)}
+                    </div>
+                `;
+            } 
+            else if (netFisik < 0) {
+                fisikBox.className = "bg-gradient-to-br from-amber-100 to-orange-100/50 border-2 border-amber-500 p-5 rounded-xl text-center flex flex-col justify-center items-center shadow-md transition-all h-full min-h-[140px]";
+                fisikBox.innerHTML = `
+                    <span class="text-xs tracking-wider font-black uppercase bg-amber-700 text-white px-3 py-1 rounded-md mb-2.5 shadow-sm">
+                        TERIMA KEMBALIAN FISIK DARI PEMINJAM
+                    </span>
+                    <div class="text-3xl md:text-4xl font-black tracking-tight text-slate-955">
+                        ${formatRp(Math.abs(netFisik))}
+                    </div>
+                `;
+            } 
+            else {
+                fisikBox.className = "bg-slate-50 border-2 border-slate-300 p-5 rounded-xl text-center flex flex-col justify-center items-center transition-all h-full min-h-[140px]";
+                fisikBox.innerHTML = `
+                    <span class="text-xs tracking-wider font-black uppercase bg-slate-200 text-slate-700 px-3 py-1 rounded-md mb-2.5 border border-slate-300">
+                        KAS PAS (TIDAK ADA AKSI)
+                    </span>
+                    <div class="text-3xl md:text-4xl font-black tracking-tight text-slate-400">
+                        Rp 0
+                    </div>
+                `;
+            }
+
+            // Update Status Transit Virtual (Tinggi Kontras)
+            const statusTransit = document.getElementById('statusTransit');
+            if (unallocatedV > 0) {
+                statusTransit.innerText = `SELISIH: ${formatRp(unallocatedV)}`;
+                statusTransit.className = "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-100 text-rose-950 border-2 border-rose-500 animate-pulse shadow-sm";
+            } else {
+                statusTransit.innerText = `SEIMBANG`;
+                statusTransit.className = "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-100 text-emerald-950 border-2 border-emerald-500 shadow-sm";
+            }
+
+            // Update UI Pop-ups dengan Warna Klasik (Pink, Hijau, Oranye) yang Dipertajam
+            setPopState('pop1F', pop1F);
+            setPopState('pop1V', pop1V);
+            
+            setPopState('pop2V', pop2V);
+            setPopState('pop2F', pop2F);
+            
+            setPopState('pop3V', pop3V);
+            setPopState('pop3F', pop3F);
         }
 
-        // Jalankan saat load awal biar nilainya Rp 0 semua
-        window.onload = kalkulasi;
+        // Inisialisasi awal saat dimuat
+        window.onload = function() {
+            initModalDenoms();
+            kalkulasi();
+        };
     </script>
 </body>
 </html>
